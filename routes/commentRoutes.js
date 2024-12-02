@@ -14,3 +14,7 @@ router.post('/', commentController.createComment);
 // Delete a comment by ID
 router.delete('/:id', commentController.deleteComment);
 
+router.get('/:id', commentController.getAllCommentsById);
+
+module.exports = router;
+

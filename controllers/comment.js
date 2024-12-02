@@ -59,3 +59,25 @@ const deleteComment = async (req, res) => {
     }
   };
 
+  const getAllCommentsById = async (req, res) => {
+    try {
+        const comments = await Comments.find({ postId: req.params.id });
+        if (!comments || comments.length === 0) {
+            return res.status(404).send('No comments found for the given post ID.');
+        }
+        res.send(comments);
+    } catch (error) {
+        res.status(500).send('An error occurred while retrieving the comments.');
+        console.error(error);
+    }
+};
+
+
+module.exports = {
+    createComment,
+    getAllComments,
+    getAllCommentsById,
+    updateComment,
+    deleteComment,
+    getAllCommentsById
+};

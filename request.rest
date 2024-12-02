@@ -1,10 +1,59 @@
 ###
 
-POST  http://localhost:3000/post 
+GET http://localhost:1200/posts
+
+###
+
+GET http://localhost:1200/posts?owner=Kevin
+
+###
+
+GET http://localhost:1200/posts/673d1bb3c99fa652ad948d8f
+
+###
+
+POST http://localhost:1200/posts
 Content-Type: application/json
 
 {
-    "owner": "Roie",
-    "title": "ma",
-    "content": "kashoor"
+    "title": "Hello",
+    "content": "Hello World...",
+    "owner": "Kevin"
+    
 }
+
+###
+
+DELETE http://localhost:1200/posts/674dcd6faeda9c8ab783ca36
+###
+
+PUT http://localhost:1200/posts
+
+###
+
+GET http://localhost:1200/comments
+
+###
+
+GET http://localhost:1200/comments?owner=elad
+
+###
+
+GET http://localhost:1200/comments/673e7734d6e44091661d0d85
+
+###
+
+POST http://localhost:1200/comments
+Content-Type: application/json
+
+{
+    "title": "hear me out",
+    "content": "i dont agree with that at all",
+    "postId": "673d1bb3c99fa652ad948d8f",
+    "owner": "me"
+    
+}
+
+###
+
+DELETE http://localhost:1200/comments/673e7734d6e44091661d0d85
