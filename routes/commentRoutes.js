@@ -11,3 +11,6 @@ router.put('/:id', commentController.updateComment);
 // Create a new comment
 router.post('/', commentController.createComment);
 
+// Delete a comment by ID
+router.delete('/:id', commentController.deleteComment);
+
