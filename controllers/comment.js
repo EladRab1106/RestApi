@@ -13,6 +13,7 @@ const getAllComments = async (req, res) => {
         res.status(500).send({ error: "An error occurred while retrieving comments." });
     }
 };
+
 const updateComment = async (req, res) => {
     try {
         const comment = await Comments.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -25,3 +26,16 @@ const updateComment = async (req, res) => {
         console.error(error);
     }
 };
+
+
+const createComment = async (req, res) => {
+    try {
+        const comment = new Comments(req.body); // Create a new comment using the request body
+        await comment.save(); // Save the comment to the database
+        res.status(201).send(comment); // Send the saved comment with a 201 status (Created)
+    } catch (error) {
+        console.error(error); // Log the error for debugging
+        res.status(500).send({ error: "Failed to create the comment." }); // Send a 500 status with an error message
+    }
+};
+
