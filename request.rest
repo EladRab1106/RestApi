@@ -1,18 +1,18 @@
 ###
 
-GET http://localhost:1200/posts
+GET http://localhost:3000/posts
 
 ###
 
-GET http://localhost:1200/posts?owner=Kevin
+GET http://localhost:3000/posts?owner=Kevin
 
 ###
 
-GET http://localhost:1200/posts/673d1bb3c99fa652ad948d8f
+GET http://localhost:3000/posts/673d1bb3c99fa652ad948d8f
 
 ###
 
-POST http://localhost:1200/posts
+POST http://localhost:3000/posts
 Content-Type: application/json
 
 {
