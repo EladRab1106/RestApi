@@ -14,6 +14,20 @@ const getAllComments = async (req, res) => {
     }
 };
 
+const updateComment = async (req, res) => {
+    try {
+        const comment = await Comments.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        if (!comment) {
+            return res.status(404).send('The comment with the given ID was not found.');
+        }
+        res.send(comment);
+    } catch (error) {
+        res.status(500).send('An error occurred while updating the comment.');
+        console.error(error);
+    }
+};
+
+
 const createComment = async (req, res) => {
     try {
         const comment = new Comments(req.body); // Create a new comment using the request body
