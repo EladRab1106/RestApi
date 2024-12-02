@@ -15,3 +15,16 @@ const getAllPosts = async(req,res) => {
         res.status(400).send(error.message);    
     }
 }
+
+const createPost = async (req,res) => {
+    const post = req.body;
+    try {
+        const newPost = await postModel.create(post);
+        res.status(200).send(newPost);
+    } catch (error) {
+        res.status(400).send(error);
+    }
+}
+
+
+module.exports = {getAllPosts, createPost};
