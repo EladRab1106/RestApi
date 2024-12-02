@@ -3,8 +3,8 @@ const app = express();
 const dotenv = require('dotenv').config();
 const bodyParser = require('body-parser');
 const port = process.env.PORT;
-const postsRoutes = require('./routes/postsRoutes');
-const commentsRoutes = require('./routes/commentsRoutes');
+const postsRoutes = require('./routes/postRoutes');
+const commentsRoutes = require('./routes/commentRoutes');
 
 const mongoose = require('mongoose');
 mongoose.connect(process.env.MONGO_URI);
