@@ -36,4 +36,14 @@ const getPostById = async (req,res) => {
     }
 }
 
-module.exports = {getAllPosts, createPost, getPostById};
+const updatePost = async (req,res) => {
+    const postId = req.params.id;
+    try {
+        const post = await postModel.findByIdAndUpdate(postId, req.body, {new: true});
+        res.status(200).send(post);
+    } catch (error) {
+        res.status(400).send(error.message);
+    }
+}
+
+module.exports = {getAllPosts, createPost, getPostById, updatePost};
