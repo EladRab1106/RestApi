@@ -1,0 +1,10 @@
+###
+
+POST  http://localhost:3000/post 
+Content-Type: application/json
+
+{
+    "owner": "Roie",
+    "title": "ma",
+    "content": "kashoor"
+}
