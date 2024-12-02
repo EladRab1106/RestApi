@@ -24,26 +24,26 @@ Content-Type: application/json
 
 ###
 
-DELETE http://localhost:1200/posts/674dcd6faeda9c8ab783ca36
+DELETE http://localhost:3000/posts/674dcd6faeda9c8ab783ca36
 ###
 
-PUT http://localhost:1200/posts
-
-###
-
-GET http://localhost:1200/comments
+PUT http://localhost:3000/posts
 
 ###
 
-GET http://localhost:1200/comments?owner=elad
+GET http://localhost:3000/comments
 
 ###
 
-GET http://localhost:1200/comments/673e7734d6e44091661d0d85
+GET http://localhost:3000/comments?owner=elad
 
 ###
 
-POST http://localhost:1200/comments
+GET http://localhost:3000/comments/673e7734d6e44091661d0d85
+
+###
+
+POST http://localhost:3000/comments
 Content-Type: application/json
 
 {
@@ -56,4 +56,4 @@ Content-Type: application/json
 
 ###
 
-DELETE http://localhost:1200/comments/673e7734d6e44091661d0d85
+DELETE http://localhost:3000/comments/673e7734d6e44091661d0d85
