@@ -46,4 +46,17 @@ const updatePost = async (req,res) => {
     }
 }
 
-module.exports = {getAllPosts, createPost, getPostById, updatePost};
+const deletePost = async(req,res) => {
+    const postId = req.params.id;
+    try {
+        if (postId) {
+            await commentsModel.deleteMany({postId: postId});   
+        }
+        const post = await postModel.findByIdAndDelete(postId);
+        res.status(200).send(post);
+    } catch (error) {
+        res.status(400).send(error.message);
+    }
+}
+
+module.exports = {getAllPosts, createPost, getPostById, updatePost, deletePost};

@@ -10,4 +10,6 @@ router.get('/:id', Post.getPostById);
 
 router.put('/:id', Post.updatePost);
 
+router.delete('/:id', Post.deletePost);
+
 module.exports = router;
