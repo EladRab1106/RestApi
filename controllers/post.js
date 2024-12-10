@@ -39,7 +39,7 @@ const getPostById = async (req,res) => {
             
             return res.status(404).send('Post not found');
         }
-        res.status(404).send(post);
+        res.status(200).send(post);
     } catch (error) {
         res.status(400).send(error.message);
     }
@@ -49,6 +49,9 @@ const updatePost = async (req,res) => {
     const postId = req.params.id;
     try {
         const post = await postModel.findByIdAndUpdate(postId, req.body, {new: true});
+        if (!post) {
+            return res.status(404).send('Post not found');
+        };
         res.status(200).send(post);
     } catch (error) {
         res.status(400).send(error.message);
@@ -62,6 +65,9 @@ const deletePost = async(req,res) => {
             await commentsModel.deleteMany({postId: postId});   
         }
         const post = await postModel.findByIdAndDelete(postId);
+        if (!post) {
+            return res.status(404).send('Post not found');
+        }
         res.status(200).send(post);
     } catch (error) {
         res.status(400).send(error.message);

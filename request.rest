@@ -4,11 +4,11 @@ GET http://localhost:3000/post
 
 ###
 
-GET http://localhost:3000/post?owner=Kevin
+GET http://localhost:3000/post?owner=elad
 
 ###
 
-GET http://localhost:3000/post/673d1bb3c99fa652ad948d8f
+GET http://localhost:3000/post/6758c8e84540428283cbdff9
 
 ###
 
@@ -18,16 +18,16 @@ Content-Type: application/json
 {
     "title": "Hello",
     "content": "Hello World...",
-    "owner": "ani"
+    "owner": "elad"
     
 }
 
 ###
 
-DELETE http://localhost:3000/post/67574579beea74975307c4ff
+DELETE http://localhost:3000/post/6758c8e84540428283cbdff9
 ###
 
-PUT http://localhost:3000/post/674dd075aeda9c8ab783ca39
+PUT http://localhost:3000/post/6758c8e84540428283cbdff9
 Content-Type: application/json
 
 {
@@ -47,7 +47,20 @@ GET http://localhost:3000/comment?owner=elad
 
 ###
 
-GET http://localhost:3000/comment/674dd075aeda9c8ab783ca39
+GET http://localhost:3000/comment/6758c94b4540428283cbe005
+
+###
+
+PUT http://localhost:3000/comment/6758c96c4540428283cbe008
+Content-Type: application/json
+
+{
+    "title": "hear me out",
+    "content": "i agree with that",
+    "postId": "6758c94b4540428283cbe005",
+    "owner": "roi"
+    
+}
 
 ###
 
@@ -57,11 +70,14 @@ Content-Type: application/json
 {
     "title": "hear me out",
     "content": "i dont agree with that at all",
-    "postId": "674dd075aeda9c8ab783ca39",
-    "owner": "me"
+    "postId": "6758c94b4540428283cbe005",
+    "owner": "elad"
     
 }
 
 ###
 
-DELETE http://localhost:3000/comment/674da298471486216fd8c213
+DELETE http://localhost:3000/comment/6758c9814540428283cbe00a
+
+
+

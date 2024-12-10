@@ -4,6 +4,9 @@ const commentController = require('../controllers/comment');
 // Get all comments
 router.get('/', commentController.getAllComments);
 
+//get a comment by ID
+// router.get('/:id', commentController.getCommentById);
+
 
 // Update a comment by ID
 router.put('/:id', commentController.updateComment);
