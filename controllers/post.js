@@ -23,7 +23,7 @@ const createPost = async (req,res) => {
     const post = req.body;
     try {
         const newPost = await postModel.create(post);
-        res.status(200).send(newPost);
+        res.status(201).send(newPost);
     } catch (error) {
         res.status(400).send(error);
     }
@@ -39,7 +39,7 @@ const getPostById = async (req,res) => {
             
             return res.status(404).send('Post not found');
         }
-        res.status(404).send(post);
+        res.status(200).send(post);
     } catch (error) {
         res.status(400).send(error.message);
     }
