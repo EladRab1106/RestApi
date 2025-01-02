@@ -1,16 +1,20 @@
-const request = require("supertest");
-const app = require("../server");
-const mongoose = require("mongoose");
-const postModel = require("../models/postModel");
+import request from "supertest";
+import { Express } from "express";
+import initApp from "../server";  
+import mongoose from "mongoose";
+import postModel, {IPost} from "../models/postModel";
 
-const posts = [
+const posts:IPost[] = [
   { title: "first post", content: "this is the first post", owner: "elad" },
   { title: "second post", content: "this is the second post", owner: "roie" },
   { title: "third post", content: "this is the third post", owner: "eliav" },
 ];
 
+let app: Express;
+
 beforeAll(async () => {
   console.log("beforeAll");
+  app = await initApp();
   await postModel.deleteMany(); // Clear the collection
   await postModel.insertMany(posts); // Seed the database with test data
 });
@@ -42,6 +46,9 @@ describe("posts", () => {
 
   test("should get a post by id", async () => {
     const post = await postModel.findOne({ title: "first post" }); // Find one post from the database
+    if (!post) {
+      throw new Error("Post not found");
+    }
     const response = await request(app).get(`/post/${post._id}`);
     expect(response.statusCode).toBe(200);
     expect(response.body.title).toBe(post.title);
@@ -51,6 +58,9 @@ describe("posts", () => {
 
   test("should update a post by id", async () => {
     const post = await postModel.findOne({ title: "second post" });
+    if (!post) {
+      throw new Error("Post not found");
+    }
     const response = await request(app)
       .put(`/post/${post._id}`)
       .send({ title: "updated title" });
@@ -60,6 +70,9 @@ describe("posts", () => {
 
   test("should delete a post by id", async () => {
     const post = await postModel.findOne({ title: "third post" });
+    if (!post) {
+      throw new Error("Post not found");
+    }
     const response = await request(app).delete(`/post/${post._id}`);
     expect(response.statusCode).toBe(200);
     const deletedPost = await postModel.findById(post._id); // Verify it's deleted

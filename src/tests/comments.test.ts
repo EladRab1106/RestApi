@@ -1,32 +1,36 @@
-const request = require("supertest");
-const app = require("../server");
-const mongoose = require("mongoose");
-const commentModel = require("../models/commentModel");
-const postsModel = require("../models/postModel");
+import request from "supertest";
+import { Express } from "express";
+import initApp from "../server";
+import mongoose from "mongoose";
+import commentModel, { IComment } from "../models/commentModel";
+import postsModel from "../models/postModel";
 
-const comments = [
+const comments: IComment[] = [
   {
     title: "first comment",
     content: "this is the first comment",
-    postId: new mongoose.Types.ObjectId(),
+    postId: "1",
     owner: "elad",
   },
   {
     title: "second comment",
     content: "this is the second comment",
-    postId: new mongoose.Types.ObjectId(),
+    postId: "1",
     owner: "roie",
   },
   {
     title: "third comment",
     content: "this is the third comment",
-    postId: new mongoose.Types.ObjectId(),
+    postId: "2",
     owner: "eliav",
   },
 ];
 
+let app: Express;
+
 beforeAll(async () => {
   console.log("beforeAll");
+  app = await initApp();
   await commentModel.deleteMany();
   await commentModel.insertMany(comments); // Seed the comments
 });
@@ -60,6 +64,9 @@ describe("comments", () => {
 
   test("should update a comment by id", async () => {
     const comment = await commentModel.findOne();
+    if (!comment) {
+      throw new Error("No comments found");
+    }
     const response = await request(app)
       .put(`/comment/${comment._id}`)
       .send({ title: "updated title" });
@@ -89,6 +96,9 @@ describe("comments", () => {
 
   test("should delete a comment by id", async () => {
     const comment = await commentModel.findOne();
+    if (!comment) {
+      throw new Error("No comments found");
+    }
     const response = await request(app).delete(`/comment/${comment._id}`);
     expect(response.statusCode).toBe(200);
     const deletedComment = await commentModel.findById(comment._id);
