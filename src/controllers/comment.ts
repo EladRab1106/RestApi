@@ -1,48 +1,19 @@
 import { Request, Response } from "express";
 import Comments from "../models/commentModel";
+import base_controller from "./base_controller";
 
-const getAllComments = async (req: Request, res: Response) => {
-  try {
-    // Attempt to retrieve all comments from the database
-    const comments = await Comments.find();
+const BaseController = new base_controller(Comments);
 
-    // Send the comments as the response
-    res.status(200).send(comments);
-  } catch (error) {
-    // Handle errors and send an error response
-    console.error("Error fetching comments:", error);
-    res
-      .status(500)
-      .send({ error: "An error occurred while retrieving comments." });
-  }
+const getAllComments =  (req: Request, res: Response) => {
+  return BaseController.getAll(req, res);
 };
 
-const updateComment = async (req: Request, res: Response) => {
-  try {
-    const comment = await Comments.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
-    if (!comment) {
-      return res
-        .status(404)
-        .send("The comment with the given ID was not found.");
-    }
-    res.send(comment);
-  } catch (error) {
-    res.status(500).send("An error occurred while updating the comment.");
-    console.error(error);
-  }
+const updateComment =  (req: Request, res: Response) => {
+  return BaseController.updateItem(req, res);
 };
 
-const createComment = async (req: Request, res: Response) => {
-  try {
-    const comment = new Comments(req.body); // Create a new comment using the request body
-    await comment.save(); // Save the comment to the database
-    res.status(201).send(comment); // Send the saved comment with a 201 status (Created)
-  } catch (error) {
-    console.error(error); // Log the error for debugging
-    res.status(500).send({ error: "Failed to create the comment." }); // Send a 500 status with an error message
-  }
+const createComment =  (req: Request, res: Response) => {
+  return BaseController.createItem(req, res);
 };
 
 const deleteComment = async (req: Request, res: Response) => {
