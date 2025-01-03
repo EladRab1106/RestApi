@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import postModel from "../models/postModel";
 import commentsModel from "../models/commentModel";
 import base_controller from "./base_controller";
+
 const BaseController = new base_controller(postModel);
 
 const getAllPosts =  (req: Request, res: Response) => {
