@@ -8,12 +8,13 @@ import bodyParser from "body-parser";
 import postsRoutes from "./routes/postRoutes";
 import commentsRoutes from "./routes/commentRoutes";
 import mongoose from "mongoose";
-
+import authRoutes from "./routes/authRoutes";
 const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/post", postsRoutes);
 app.use("/comment", commentsRoutes);
+app.use("/auth", authRoutes);
 
 const db = mongoose.connection;
 db.on("error", (error) => console.error(error));
