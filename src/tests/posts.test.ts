@@ -3,6 +3,7 @@ import { Express } from "express";
 import initApp from "../server";
 import mongoose from "mongoose";
 import postModel, { IPost } from "../models/postModel";
+import commentModel from "../models/commentModel";
 
 const posts: IPost[] = [
   { title: "first post", content: "this is the first post", owner: "elad" },
@@ -142,6 +143,43 @@ describe("posts", () => {
     // Verify the post was deleted
     const deletedPost = await postModel.findById(post._id);
     expect(deletedPost).toBeNull();
+  });
+
+  test("should delete a post and its associated comments", async () => {
+    const user = { email: "test@test.com", password: "password" };
+    await request(app).post("/auth/register").send(user);
+    const loginResponse = await request(app).post("/auth/login").send(user);
+    const token = loginResponse.body.token;
+
+    const post = await postModel.create({
+      title: "Test Post",
+      content: "Test Content",
+      owner: user.email,
+    });
+
+    await commentModel.create({
+      title: "Comment 1",
+      content: "First comment",
+      postId: post._id,
+      owner: "user1",
+    });
+    await commentModel.create({
+      title: "Comment 2",
+      content: "Second comment",
+      postId: post._id,
+      owner: "user2",
+    });
+
+    const deleteResponse = await request(app)
+      .delete(`/post/${post._id}`)
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(deleteResponse.statusCode).toBe(200);
+    const deletedPost = await postModel.findById(post._id);
+    expect(deletedPost).toBeNull();
+
+    const remainingComments = await commentModel.find({ postId: post._id });
+    expect(remainingComments.length).toBe(0);
   });
 
   test("should get all posts by owner", async () => {

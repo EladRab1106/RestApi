@@ -1,4 +1,3 @@
-// import { Request, Response } from "express";
 import  CommentModel,{ IComment } from "../models/commentModel";
 import base_controller from "./base_controller";
 
