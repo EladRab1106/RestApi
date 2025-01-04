@@ -1,10 +1,10 @@
 import request from "supertest";
 import { Express } from "express";
-import initApp from "../server";  
+import initApp from "../server";
 import mongoose from "mongoose";
-import postModel, {IPost} from "../models/postModel";
+import postModel, { IPost } from "../models/postModel";
 
-const posts:IPost[] = [
+const posts: IPost[] = [
   { title: "first post", content: "this is the first post", owner: "elad" },
   { title: "second post", content: "this is the second post", owner: "roie" },
   { title: "third post", content: "this is the third post", owner: "eliav" },
@@ -31,14 +31,35 @@ describe("posts", () => {
     expect(response.body.length).toBe(posts.length); // Should match the number of seeded posts
   });
 
-  test("should create a new post", async () => {
+  test("should not allow unauthenticated users to create a new post", async () => {
     const newPost = {
       title: "fourth post",
       content: "this is the fourth post",
       owner: "dan",
     };
     const response = await request(app).post("/post").send(newPost);
-    expect(response.statusCode).toBe(201);
+
+    expect(response.statusCode).toBe(401); // Unauthenticated users should be rejected
+  });
+
+  test("should allow authenticated users to create a new post", async () => {
+    // Create and login a user
+    const user = { email: "test@test.com", password: "password" };
+    await request(app).post("/auth/register").send(user);
+    const loginResponse = await request(app).post("/auth/login").send(user);
+    const token = loginResponse.body.token;
+
+    const newPost = {
+      title: "fourth post",
+      content: "this is the fourth post",
+      owner: "dan",
+    };
+    const response = await request(app)
+      .post("/post")
+      .set("Authorization", `Bearer ${token}`)
+      .send(newPost);
+
+    expect(response.statusCode).toBe(201); // Authenticated users should succeed
     expect(response.body.title).toBe(newPost.title);
     expect(response.body.content).toBe(newPost.content);
     expect(response.body.owner).toBe(newPost.owner);
@@ -56,26 +77,70 @@ describe("posts", () => {
     expect(response.body.owner).toBe(post.owner);
   });
 
-  test("should update a post by id", async () => {
+  test("should not allow unauthenticated users to update a post by id", async () => {
     const post = await postModel.findOne({ title: "second post" });
     if (!post) {
       throw new Error("Post not found");
     }
+
     const response = await request(app)
       .put(`/post/${post._id}`)
       .send({ title: "updated title" });
-    expect(response.statusCode).toBe(200);
+
+    expect(response.statusCode).toBe(401); // Unauthenticated users should be rejected
+  });
+
+  test("should allow authenticated users to update a post by id", async () => {
+    // Create and login a user
+    const user = { email: "test@test.com", password: "password" };
+    await request(app).post("/auth/register").send(user);
+    const loginResponse = await request(app).post("/auth/login").send(user);
+    const token = loginResponse.body.token;
+
+    const post = await postModel.findOne({ title: "second post" });
+    if (!post) {
+      throw new Error("Post not found");
+    }
+
+    const response = await request(app)
+      .put(`/post/${post._id}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ title: "updated title" });
+
+    expect(response.statusCode).toBe(200); // Authenticated users should succeed
     expect(response.body.title).toBe("updated title");
   });
 
-  test("should delete a post by id", async () => {
+  test("should not allow unauthenticated users to delete a post by id", async () => {
     const post = await postModel.findOne({ title: "third post" });
     if (!post) {
       throw new Error("Post not found");
     }
+
     const response = await request(app).delete(`/post/${post._id}`);
-    expect(response.statusCode).toBe(200);
-    const deletedPost = await postModel.findById(post._id); // Verify it's deleted
+    expect(response.statusCode).toBe(401); // Unauthenticated users should be rejected
+  });
+
+  test("should allow authenticated users to delete a post by id", async () => {
+    // Create and login a user
+    const user = { email: "test@test.com", password: "password" };
+    await request(app).post("/auth/register").send(user);
+    const loginResponse = await request(app).post("/auth/login").send(user);
+    const token = loginResponse.body.token;
+
+    const post = await postModel.findOne({ title: "third post" });
+    if (!post) {
+      throw new Error("Post not found");
+    }
+
+    const response = await request(app)
+      .delete(`/post/${post._id}`)
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(response.statusCode).toBe(200); // Authenticated users should succeed
+
+    // Verify the post was deleted
+    const deletedPost = await postModel.findById(post._id);
     expect(deletedPost).toBeNull();
   });
 

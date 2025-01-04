@@ -37,4 +37,8 @@ const initApp = () => {
   });
 };
 
+export const closeConnection = () => {
+  mongoose.connection.close();
+};
+
 export default initApp;
