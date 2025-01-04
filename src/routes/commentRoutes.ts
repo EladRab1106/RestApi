@@ -1,15 +1,15 @@
 import express from "express";
 const router = express.Router();
 import commentController from "../controllers/comment";
+import { authMiddleware } from "../controllers/auth_controller";
+router.get("/",authMiddleware, commentController.getAllComments);
 
-router.get("/", commentController.getAllComments);
+router.put("/:id",authMiddleware, commentController.updateComment);
 
-router.put("/:id", commentController.updateComment);
+router.post("/",authMiddleware, commentController.createComment);
 
-router.post("/", commentController.createComment);
+router.delete("/:id",authMiddleware, commentController.deleteComment);
 
-router.delete("/:id", commentController.deleteComment);
-
-router.get("/:id", commentController.getAllCommentsById);
+router.get("/:id",authMiddleware, commentController.getAllCommentsById);
 
 export = router;
