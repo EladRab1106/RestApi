@@ -17,7 +17,7 @@ const generateTokens = (id:string): { accessToken: string, refreshToken: string 
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
   const refreshToken = jwt.sign({ _id: id, random:random }, process.env.JWT_SECRET, {
-    expiresIn: process.env.REFRESH_JWT_EXPIRES_IN,
+    expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN,
   });
   return { accessToken, refreshToken };
 }
@@ -39,16 +39,22 @@ const register = async (req: Request, res: Response) => {
 }
 
 const login = async (req: Request, res: Response) => {
-  const { email, password } = req.body;
+  console.log("in login");
+  
+  const {email,password} = req.body;
+  console.log(email);
+  console.log(password);
   try {
     const user = await userModel.findOne({ email });
     if (!user) {
-      res.status(400).send("wrong email or password");
+      console.log("wrong email or password1");
+      res.status(400).send("wrong email or password1");
       return;
     }
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
-      res.status(400).send("wrong email or password");
+      console.log("wrong email or password2");
+      res.status(400).send("wrong email or password2");
       return;
     }
     const tokens = generateTokens(user._id);
@@ -64,9 +70,11 @@ const login = async (req: Request, res: Response) => {
     await user.save();
     res.status(200).send({ accessToken: tokens.accessToken, _id: user._id, email: user.email, refreshToken: tokens.refreshToken });
   } catch (e) {
+    console.log(e);
     res.status(400).send(e);
   }
-};
+  }  
+
 
 
 const logout = async (req: Request, res: Response) => {
