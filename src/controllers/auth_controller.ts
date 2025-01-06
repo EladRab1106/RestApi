@@ -1,7 +1,27 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Response, Request, NextFunction } from "express";
 import userModel from "../models/userModel";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+
+type Payload = {
+  _id: string;
+};
+
+const generateTokens = (id:string): { accessToken: string, refreshToken: string }|null => {
+  const random = Math.floor(Math.random() * 1000000);
+  if (!process.env.JWT_SECRET) {
+    return null;
+  }
+  const accessToken = jwt.sign({ _id: id, random:random }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRES_IN,
+  });
+  const refreshToken = jwt.sign({ _id: id, random:random }, process.env.JWT_SECRET, {
+    expiresIn: process.env.REFRESH_JWT_EXPIRES_IN,
+  });
+  return { accessToken, refreshToken };
+}
+
 
 const register = async (req: Request, res: Response) => {
   try {
@@ -15,8 +35,8 @@ const register = async (req: Request, res: Response) => {
     res.status(200).send(user);
   } catch (e) {
     res.status(400).send(e);
-  }
-};
+}
+}
 
 const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
@@ -31,22 +51,105 @@ const login = async (req: Request, res: Response) => {
       res.status(400).send("wrong email or password");
       return;
     }
-    if (!process.env.JWT_SECRET) {
-      res.status(500).send("server error");
-      return;
+    const tokens = generateTokens(user._id);
+    if(!tokens){
+        res.status(500).send('server error');
+        return;
     }
-    const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRES_IN,
-    });
-    res.status(200).send({ token, id: user._id });
+
+    if(user.refreshToken==null){
+        user.refreshToken = [];
+    }
+    user.refreshToken.push(tokens.refreshToken);
+    await user.save();
+    res.status(200).send({ accessToken: tokens.accessToken, _id: user._id, email: user.email, refreshToken: tokens.refreshToken });
   } catch (e) {
     res.status(400).send(e);
   }
 };
 
-type Payload = {
-    _id: string;
+
+const logout = async (req: Request, res: Response) => {
+  const refreshToken = req.body.refreshToken;
+  if (!refreshToken) {
+    res.status(400).send("bad request");
+    return;
+  }
+  if (!process.env.JWT_SECRET) {
+    res.status(500).send("server error");
+    return;
+  }
+  jwt.verify(refreshToken, process.env.JWT_SECRET, async (err:any, payload:any) => {
+    if (err) {
+      res.status(401).send("Access Denied");
+      return;
+    }
+    try{
+    const user = await userModel.findById((payload as Payload)._id);
+    if (!user) {
+      res.status(404).send("user not found");
+      return;
+    }
+    if (!user.refreshToken || !user.refreshToken.includes(refreshToken)) {
+      res.status(401).send("Access Denied");
+      user.refreshToken = [];
+      await user.save();
+      return;
+    }
+    const tokens = user.refreshToken.filter((t) => t !== refreshToken);
+    user.refreshToken = tokens;
+    await user.save();
+    res.status(200).send("logged out");
+    }catch(e){
+        res.status(500).send(e);
+      }
+  });
 };
+
+const refresh = async (req: Request, res: Response) => {
+  const refreshToken = req.body.refreshToken;
+  if (!refreshToken) {
+    res.status(400).send("bad request");
+    return;
+  }
+  if (!process.env.JWT_SECRET) {
+    res.status(500).send("server error");
+    return;
+  }
+  jwt.verify(refreshToken, process.env.JWT_SECRET, async (err:any, payload:any) => {
+    if (err) {
+      res.status(401).send("Access Denied");
+      return;
+    }
+    try{
+    const user = await userModel.findById((payload as Payload)._id);
+    if (!user) {
+      res.status(404).send("user not found");
+      return;
+    }
+    if (!user.refreshToken || !user.refreshToken.includes(refreshToken)) {
+      res.status(401).send("Access Denied");
+      user.refreshToken = [];
+      await user.save();
+      return;
+    }
+    const newTokens = generateTokens(user._id);
+    if(!newTokens){
+      user.refreshToken = [];
+      await user.save();  
+      res.status(500).send('server error');
+      return;
+  }
+    user.refreshToken = user.refreshToken.filter((t) => t !== refreshToken);
+    user.refreshToken.push(newTokens.refreshToken);
+    await user.save();
+    res.status(200).send({ accessToken: newTokens.accessToken, refreshToken: newTokens.refreshToken });
+    }catch(e){
+        res.status(500).send(e);
+    }
+
+})}
+
 
 export const authMiddleware = async (
   req: Request,
@@ -74,4 +177,4 @@ export const authMiddleware = async (
 });
 };
 
-export default { register, login };
+export default { register, login, logout, refresh };

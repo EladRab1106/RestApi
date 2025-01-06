@@ -6,6 +6,8 @@
   "scripts": {
     "test": "tsc && jest --detectOpenHandles --forceExit",
     "testAuth": "tsc && jest --detectOpenHandles --forceExit --testPathPattern=auth",
+    "testPosts": "tsc && jest --detectOpenHandles --forceExit --testPathPattern=posts",
+    "testComments": "tsc && jest --detectOpenHandles --forceExit --testPathPattern=comments",
     "start": "tsc && node dist/app.js",
     "dev": "nodemon src/app.ts",
     "lint": "eslint . --ext .ts"
