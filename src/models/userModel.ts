@@ -3,8 +3,8 @@ import mongoose, { Schema, Model } from "mongoose";
 export interface Iuser {
   email: string;
   password: string;
-    _id?: string;
-    refreshToken?: string[];
+  _id?: string;
+  refreshToken?: string[];
 }
 
 const userSchema: Schema = new Schema({
