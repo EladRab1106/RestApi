@@ -4,6 +4,7 @@ import initApp from "../server";
 import mongoose from "mongoose";
 import postModel, { IPost } from "../models/postModel";
 import commentModel from "../models/commentModel";
+import userModel, { Iuser } from "../models/userModel";
 
 const posts: IPost[] = [
   { title: "first post", content: "this is the first post", owner: "elad" },
@@ -11,13 +12,27 @@ const posts: IPost[] = [
   { title: "third post", content: "this is the third post", owner: "eliav" },
 ];
 
+type User = Iuser & { accessToken?: string };
+
+const testUser: User = {
+  email: "test@user.com",
+  password: "testPassword",
+};
+
 let app: Express;
 
 beforeAll(async () => {
   console.log("beforeAll");
   app = await initApp();
-  await postModel.deleteMany(); // Clear the collection
-  await postModel.insertMany(posts); // Seed the database with test data
+  await postModel.deleteMany();
+  await commentModel.deleteMany();
+  await userModel.deleteMany();
+  await postModel.insertMany(posts);
+  const registerResponse = await request(app)
+    .post("/auth/register")
+    .send(testUser);
+  testUser.accessToken = registerResponse.body.accessToken;
+  testUser._id = registerResponse.body._id;
 });
 
 afterAll(async () => {
@@ -29,7 +44,7 @@ describe("posts", () => {
   test("should get all posts", async () => {
     const response = await request(app).get("/post");
     expect(response.statusCode).toBe(200);
-    expect(response.body.length).toBe(posts.length); // Should match the number of seeded posts
+    expect(response.body.length).toBe(posts.length);
   });
 
   test("should not allow unauthenticated users to create a new post", async () => {
@@ -40,30 +55,34 @@ describe("posts", () => {
     };
     const response = await request(app).post("/post").send(newPost);
 
-    expect(response.statusCode).toBe(401); // Unauthenticated users should be rejected
+    expect(response.statusCode).toBe(401);
   });
 
   test("should allow authenticated users to create a new post", async () => {
-    // Create and login a user
-    const user = { email: "test@test.com", password: "password" };
-    await request(app).post("/auth/register").send(user);
-    const loginResponse = await request(app).post("/auth/login").send(user);
-    const token = loginResponse.body.token;
+    const loginResponse = await request(app).post("/auth/login").send({
+      email: testUser.email,
+      password: testUser.password,
+    });
 
-    const newPost = {
-      title: "fourth post",
-      content: "this is the fourth post",
-      owner: "dan",
-    };
-    const response = await request(app)
-      .post("/post")
-      .set("Authorization", `Bearer ${token}`)
-      .send(newPost);
+    expect(loginResponse.statusCode).toBe(200);
+    expect(loginResponse.body.accessToken).toBeDefined();
 
-    expect(response.statusCode).toBe(201); // Authenticated users should succeed
-    expect(response.body.title).toBe(newPost.title);
-    expect(response.body.content).toBe(newPost.content);
-    expect(response.body.owner).toBe(newPost.owner);
+    const accessToken = loginResponse.body.accessToken;
+
+    const postResponse = await request(app)
+      .post("/posts")
+      .set("authorization", "Bearer " + accessToken) 
+      .send({
+        title: "Test Post",
+        content: "This is a test post",
+        owner: "testUserId", 
+      });
+
+    // Validate the post creation
+    expect(postResponse.statusCode).toBe(201);
+    expect(postResponse.body).toHaveProperty("title", "Test Post");
+    expect(postResponse.body).toHaveProperty("content", "This is a test post");
+    expect(postResponse.body).toHaveProperty("owner", "testUserId"); // Adjust based on your app
   });
 
   test("should get a post by id", async () => {
