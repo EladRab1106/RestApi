@@ -70,19 +70,19 @@ describe("posts", () => {
     const accessToken = loginResponse.body.accessToken;
 
     const postResponse = await request(app)
-      .post("/posts")
-      .set("authorization", "Bearer " + accessToken) 
+      .post("/post")
+      .set("Authorization", "Bearer " + accessToken) 
       .send({
         title: "Test Post",
         content: "This is a test post",
-        owner: "testUserId", 
+        owner: testUser._id, // Corrected to use user ID
       });
 
     // Validate the post creation
     expect(postResponse.statusCode).toBe(201);
     expect(postResponse.body).toHaveProperty("title", "Test Post");
     expect(postResponse.body).toHaveProperty("content", "This is a test post");
-    expect(postResponse.body).toHaveProperty("owner", "testUserId"); // Adjust based on your app
+    expect(postResponse.body).toHaveProperty("owner", testUser._id);
   });
 
   test("should get a post by id", async () => {
@@ -115,7 +115,7 @@ describe("posts", () => {
     const user = { email: "test@test.com", password: "password" };
     await request(app).post("/auth/register").send(user);
     const loginResponse = await request(app).post("/auth/login").send(user);
-    const token = loginResponse.body.token;
+    const token = loginResponse.body.accessToken; // Corrected token
 
     const post = await postModel.findOne({ title: "second post" });
     if (!post) {
@@ -146,7 +146,7 @@ describe("posts", () => {
     const user = { email: "test@test.com", password: "password" };
     await request(app).post("/auth/register").send(user);
     const loginResponse = await request(app).post("/auth/login").send(user);
-    const token = loginResponse.body.token;
+    const token = loginResponse.body.accessToken; // Corrected token
 
     const post = await postModel.findOne({ title: "third post" });
     if (!post) {
@@ -168,7 +168,7 @@ describe("posts", () => {
     const user = { email: "test@test.com", password: "password" };
     await request(app).post("/auth/register").send(user);
     const loginResponse = await request(app).post("/auth/login").send(user);
-    const token = loginResponse.body.token;
+    const token = loginResponse.body.accessToken;
 
     const post = await postModel.create({
       title: "Test Post",

@@ -10,6 +10,9 @@ beforeAll(async () => {
   console.log("beforeAll");
   app = await initApp();
   await userModel.deleteMany();
+  if (!process.env.JWT_SECRET) {
+    throw new Error("JWT_SECRET is missing in environment variables");
+  }
 });
 
 afterAll(async () => {
@@ -34,7 +37,7 @@ describe("Auth Tests", () => {
     expect(response.statusCode).toBe(200);
   });
 
-  test("Auth test register fail", async () => {
+  test("Auth test register fail (duplicate email)", async () => {
     const response = await request(app)
       .post(baseUrl + "/register")
       .send(testUser);
@@ -49,6 +52,7 @@ describe("Auth Tests", () => {
         password: "wrongPassword",
       });
     expect(response.statusCode).not.toBe(200);
+
     const response2 = await request(app)
       .post(baseUrl + "/login")
       .send({
@@ -74,22 +78,23 @@ describe("Auth Tests", () => {
     testUser._id = id;
   });
 
-  test("create a post", async () => {
+  test("Create a post without auth", async () => {
     const response = await request(app).post("/post").send({
       title: "first post",
       content: "this is the first post",
       owner: "elad",
     });
-    expect(response.statusCode).not.toBe(201);
+    expect(response.statusCode).not.toBe(201); // Unauthorized
+
     const response2 = await request(app)
       .post("/post")
       .set({ authorization: "JWT " + testUser.accessToken })
       .send({
         title: "first post",
-        content: "this is thee first post",
+        content: "this is the first post",
         owner: "elad",
       });
-    expect(response2.statusCode).toBe(201);
+    expect(response2.statusCode).toBe(201); // Created
   });
 
   test("Test refresh token", async () => {
@@ -119,21 +124,21 @@ describe("Auth Tests", () => {
       .send({
         refreshToken: testUser.refreshToken,
       });
-    expect(response2.statusCode).not.toBe(200);
+    expect(response2.statusCode).not.toBe(200); // Old refresh token should be invalid after use
 
     const response3 = await request(app)
       .post(baseUrl + "/refresh")
       .send({
         refreshToken: refreshTokenNew,
       });
-    expect(response3.statusCode).toBe(200);
+    expect(response3.statusCode).toBe(200); // New refresh token
 
     const response4 = await request(app)
       .post(baseUrl + "/refresh")
       .send({
         refreshToken: refreshTokenNew,
       });
-    expect(response4.statusCode).not.toBe(200);
+    expect(response4.statusCode).not.toBe(200); // New refresh token should also expire
   });
 
   test("Test logout", async () => {
@@ -145,18 +150,20 @@ describe("Auth Tests", () => {
     const refreshToken = login.body.refreshToken;
     expect(accessToken).toBeDefined();
     expect(refreshToken).toBeDefined();
+    
     const response = await request(app)
       .post(baseUrl + "/logout")
       .send({
         refreshToken: refreshToken,
       });
     expect(response.statusCode).toBe(200);
+
     const response2 = await request(app)
       .post(baseUrl + "/refresh")
       .send({
         refreshToken: testUser.refreshToken,
       });
-    expect(response2.statusCode).not.toBe(200);
+    expect(response2.statusCode).not.toBe(200); // Should fail after logout
   });
 
   jest.setTimeout(10000);
@@ -168,34 +175,36 @@ describe("Auth Tests", () => {
     testUser.accessToken = response.body.accessToken;
     testUser.refreshToken = response.body.refreshToken;
 
-    await new Promise((resolve) => setTimeout(resolve, 5000));
+    await new Promise((resolve) => setTimeout(resolve, 5000)); // Simulate delay
 
     const response2 = await request(app)
-      .post("/posts")
+      .post("/post")
       .set({ authorization: "Bearer " + testUser.accessToken })
       .send({
         title: "Test Post",
         content: "Test Content",
         owner: "sdfSd",
       });
-    expect(response2.statusCode).not.toBe(201);
+    expect(response2.statusCode).not.toBe(201); // Should fail due to token expiration
 
     const response3 = await request(app)
       .post(baseUrl + "/refresh")
       .send({
         refreshToken: testUser.refreshToken,
       });
-    expect(response3.statusCode).toBe(200);
+    expect(response3.statusCode).toBe(200); // Refresh token should work
     testUser.accessToken = response3.body.accessToken;
+    console.log("New access token after refresh:", testUser.accessToken);
+
 
     const response4 = await request(app)
-      .post("/posts")
-      .set("authorization", "Bearer " + testUser.accessToken) 
+      .post("/post")
+      .set("authorization", "Bearer " + testUser.accessToken)
       .send({
         title: "Test Post",
         content: "Test Content",
         owner: "sdfSd",
       });
-    expect(response4.statusCode).toBe(201);
+    expect(response4.statusCode).toBe(201); // Should succeed with new access token
   });
 });
