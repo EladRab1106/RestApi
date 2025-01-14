@@ -70,7 +70,7 @@ describe("comments", () => {
     const user = { email: "test@test.com", password: "password" };
     await request(app).post("/auth/register").send(user);
     const loginResponse = await request(app).post("/auth/login").send(user);
-    const token = loginResponse.body.token;
+    const accessToken = loginResponse.body.accessToken;
 
     const newComment = {
       title: "Valid comment",
@@ -80,7 +80,7 @@ describe("comments", () => {
     };
     const response = await request(app)
       .post("/comment")
-      .set("Authorization", `Bearer ${token}`)
+      .set("Authorization", `Bearer ${accessToken}`)
       .send(newComment);
 
     expect(response.statusCode).toBe(201);
@@ -106,7 +106,7 @@ describe("comments", () => {
     const user = { email: "test@test.com", password: "password" };
     await request(app).post("/auth/register").send(user);
     const loginResponse = await request(app).post("/auth/login").send(user);
-    const token = loginResponse.body.token;
+    const accessToken = loginResponse.body.accessToken;
 
     // Insert comments into the database
     await commentModel.insertMany(comments);
@@ -118,7 +118,7 @@ describe("comments", () => {
     // Send update request with a valid token
     const response = await request(app)
       .put(`/comment/${comment._id}`)
-      .set("Authorization", `Bearer ${token}`)
+      .set("Authorization", `Bearer ${accessToken}`)
       .send({ title: "updated title" });
 
     expect(response.statusCode).toBe(200); // Authenticated users should succeed
@@ -161,7 +161,7 @@ describe("comments", () => {
     const user = { email: "test@test.com", password: "password" };
     await request(app).post("/auth/register").send(user);
     const loginResponse = await request(app).post("/auth/login").send(user);
-    const token = loginResponse.body.token;
+    const accessToken = loginResponse.body.accessToken;
 
     // Insert comments into the database
     await commentModel.insertMany(comments);
@@ -173,7 +173,7 @@ describe("comments", () => {
     // Send delete request with a valid token
     const response = await request(app)
       .delete(`/comment/${comment._id}`)
-      .set("Authorization", `Bearer ${token}`);
+      .set("Authorization", `Bearer ${accessToken}`);
 
     expect(response.statusCode).toBe(200); // Authenticated users should succeed
 
