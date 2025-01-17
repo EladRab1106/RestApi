@@ -208,7 +208,6 @@ const router = express.Router();
  */
 
 router.get("/", BaseController.getAll);
-
 router.post("/", authMiddleware, BaseController.createItem);
 router.get("/:id", BaseController.getDataById);
 router.put("/:id", authMiddleware, BaseController.updateItem);

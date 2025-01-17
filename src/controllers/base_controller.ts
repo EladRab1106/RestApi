@@ -36,15 +36,15 @@ class BaseController<T> {
   };
 
   getDataById = async (req: Request, res: Response) => {
-    const dataId = req.params.id;
-    try {
-      const data = await this.model.findById(dataId);
-      if (!data) {
-        console.log("data not found");
+    const id = req.params.id;
 
-        return res.status(404).send("data not found");
+    try {
+      const item = await this.model.findById(id);
+      if (item != null) {
+        res.send(item);
+      } else {
+        res.status(404).send("not found");
       }
-      res.status(200).send(data);
     } catch (error) {
       res.status(400).send(error);
     }

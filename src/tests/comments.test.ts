@@ -137,6 +137,7 @@ describe("comments", () => {
       postId: post._id,
       owner: "roie",
     });
+    console.log(post._id);
     const response = await request(app).get(`/comment/${post._id}`);
     expect(response.statusCode).toBe(200);
     expect(response.body[0].title).toBe(comment.title);
