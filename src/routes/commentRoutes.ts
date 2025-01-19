@@ -171,6 +171,10 @@ const router = express.Router();
  *                 type: string
  *                 description: The updated content of the comment
  *                 example: "This is the updated comment"
+ *               owner:
+ *                 type: string
+ *                 description: The updated owner of the comment
+ *                 example: "john_doe"
  *     responses:
  *       200:
  *         description: The updated comment

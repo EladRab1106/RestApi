@@ -206,7 +206,6 @@ const router = express.Router();
  *     security:
  *       - bearerAuth: []
  */
-
 router.get("/", BaseController.getAll);
 router.post("/", authMiddleware, BaseController.createItem);
 router.get("/:id", BaseController.getDataById);

@@ -166,7 +166,7 @@ describe("Auth Tests", () => {
     expect(response2.statusCode).not.toBe(200); // Should fail after logout
   });
 
-  jest.setTimeout(10000);
+  jest.setTimeout(50000);
   test("Test token expiration", async () => {
     const response = await request(app)
       .post(baseUrl + "/login")
@@ -175,7 +175,7 @@ describe("Auth Tests", () => {
     testUser.accessToken = response.body.accessToken;
     testUser.refreshToken = response.body.refreshToken;
 
-    await new Promise((resolve) => setTimeout(resolve, 5000)); // Simulate delay
+    await new Promise((resolve) => setTimeout(resolve, 40000)); 
 
     const response2 = await request(app)
       .post("/post")
