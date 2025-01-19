@@ -41,7 +41,7 @@ class BaseController<T> {
     try {
       const item = await this.model.findById(id);
       if (item != null) {
-        res.send(item);
+        res.status(200).send(item);
       } else {
         res.status(404).send("not found");
       }

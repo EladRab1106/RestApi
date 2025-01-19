@@ -71,7 +71,7 @@ const verifyRefreshToken = async (
     }
     return user;
   } catch (err) {
-    if (err){
+    if (err) {
       res.status(401).send("Access Denied");
     }
     return null;
@@ -102,14 +102,12 @@ const login = async (req: Request, res: Response) => {
     }
     user.refreshToken.push(tokens.refreshToken);
     await user.save();
-    res
-      .status(200)
-      .send({
-        accessToken: tokens.accessToken,
-        _id: user._id,
-        email: user.email,
-        refreshToken: tokens.refreshToken,
-      });
+    res.status(200).send({
+      accessToken: tokens.accessToken,
+      _id: user._id,
+      email: user.email,
+      refreshToken: tokens.refreshToken,
+    });
   } catch (e) {
     console.log(e);
     res.status(400).send(e);
@@ -125,13 +123,15 @@ const logout = async (req: Request, res: Response) => {
   const user = await verifyRefreshToken(refreshToken, res);
   if (!user) {
     res.status(401).send("Access Denied");
-    return; 
+    return;
   }
   if (!user.refreshToken) {
     res.status(200).send("Logged out successfully");
     return;
   }
-  user.refreshToken = user.refreshToken.filter((t: string) => t !== refreshToken);
+  user.refreshToken = user.refreshToken.filter(
+    (t: string) => t !== refreshToken
+  );
   await user.save();
 
   res.status(200).send("Logged out successfully");
@@ -146,7 +146,7 @@ const refresh = async (req: Request, res: Response) => {
 
   const user = await verifyRefreshToken(refreshToken, res);
   if (!user) {
-    return; 
+    return;
   }
   const newTokens = generateTokens(user._id);
   if (!newTokens) {
@@ -155,7 +155,9 @@ const refresh = async (req: Request, res: Response) => {
     res.status(500).send("Server error");
     return;
   }
-  user.refreshToken = user.refreshToken.filter((t: string) => t !== refreshToken);
+  user.refreshToken = user.refreshToken.filter(
+    (t: string) => t !== refreshToken
+  );
   user.refreshToken.push(newTokens.refreshToken);
   await user.save();
 
@@ -164,7 +166,6 @@ const refresh = async (req: Request, res: Response) => {
     refreshToken: newTokens.refreshToken,
   });
 };
-
 
 export const authMiddleware = async (
   req: Request,
