@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { Model } from "mongoose";
 import commentsModel from "../models/commentModel";
+import PostModel from "../models/postModel";
 
 class BaseController<T> {
   model: Model<T>;
@@ -39,6 +40,16 @@ class BaseController<T> {
     const id = req.params.id;
 
     try {
+      if(this.model.modelName==="Comment"){
+        const post=await PostModel.findById(id);
+        if(post==null){
+          res.status(404).send("not found");
+          return
+        }
+        const comments=await this.model.find({postId:id});
+        res.status(200).send(comments);
+
+      }
       const item = await this.model.findById(id);
       if (item != null) {
         res.status(200).send(item);
@@ -46,7 +57,7 @@ class BaseController<T> {
         res.status(404).send("not found");
       }
     } catch (error) {
-      res.status(400).send(error);
+      res.status(400);
     }
   };
 
