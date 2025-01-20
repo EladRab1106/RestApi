@@ -5,6 +5,7 @@
   "main": "app.js",
   "scripts": {
     "test": "tsc && jest --detectOpenHandles --forceExit",
+    "testCoverage": "tsc && jest --detectOpenHandles --forceExit --coverage",
     "testAuth": "tsc && jest --detectOpenHandles --forceExit --testPathPattern=auth",
     "testPosts": "tsc && jest --detectOpenHandles --forceExit --testPathPattern=posts",
     "testComments": "tsc && jest --detectOpenHandles --forceExit --testPathPattern=comments",

@@ -166,7 +166,7 @@ describe("Auth Tests", () => {
     expect(response2.statusCode).not.toBe(200); // Should fail after logout
   });
 
-  jest.setTimeout(50000);
+  jest.setTimeout(10000);
   test("Test token expiration", async () => {
     const response = await request(app)
       .post(baseUrl + "/login")
@@ -175,7 +175,7 @@ describe("Auth Tests", () => {
     testUser.accessToken = response.body.accessToken;
     testUser.refreshToken = response.body.refreshToken;
 
-    await new Promise((resolve) => setTimeout(resolve, 40000)); 
+    await new Promise((resolve) => setTimeout(resolve, 5000)); 
 
     const response2 = await request(app)
       .post("/post")
@@ -207,4 +207,55 @@ describe("Auth Tests", () => {
       });
     expect(response4.statusCode).toBe(201); // Should succeed with new access token
   });
+
+  test("Register with missing fields", async () => {
+    const response = await request(app).post(baseUrl + "/register").send({
+      email: "missing@fields.com",
+    }); // No password
+    expect(response.statusCode).toBe(400);
+  });
+  
+  test("Login with missing fields", async () => {
+    const response = await request(app).post(baseUrl + "/login").send({
+      email: testUser.email,
+    }); // No password
+    expect(response.statusCode).toBe(400);
+  });
+  
+  test("Use invalid access token", async () => {
+    const response = await request(app)
+      .post("/post")
+      .set({ authorization: "Bearer invalidToken" })
+      .send({
+        title: "Invalid Access",
+        content: "This should not work",
+        owner: "testOwner",
+      });
+    expect(response.statusCode).toBe(401); // Unauthorized
+  });
+  
+  test("Login with tampered refresh token", async () => {
+    const tamperedToken = testUser.refreshToken + "tamper";
+    const response = await request(app)
+      .post(baseUrl + "/refresh")
+      .send({ refreshToken: tamperedToken });
+    expect(response.statusCode).not.toBe(200); // Should fail
+  });
+  
+  test("Missing JWT_SECRET environment variable", async () => {
+    const originalSecret = process.env.JWT_SECRET;
+    delete process.env.JWT_SECRET;
+  
+    const response = await request(app).post(baseUrl + "/login").send(testUser);
+    expect(response.statusCode).toBe(500);
+  
+    const response2 = await request(app)
+      .post(baseUrl + "/refresh")
+      .send({ refreshToken: testUser.refreshToken });
+    expect(response2.statusCode).toBe(500);
+  
+    // Restore JWT_SECRET for subsequent tests
+    process.env.JWT_SECRET = originalSecret;
+  });
+  
 });
